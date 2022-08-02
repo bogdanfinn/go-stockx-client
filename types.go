@@ -32,6 +32,10 @@ type ProductDetails struct {
 	Imageurl          string                  `json:"imageUrl"`
 	Smallimageurl     string                  `json:"smallImageUrl"`
 	Thumburl          string                  `json:"thumbUrl"`
+	Lowestask         int                     `json:"lowestAsk"`
+	Highestbid        int                     `json:"highestBid"`
+	Lowestaskfloat    float64                 `json:"lowestAskFloat"`
+	Highestbidfloat   float64                 `json:"highestBidFloat"`
 	Variants          []ProductDetailsVariant `json:"variants"`
 }
 

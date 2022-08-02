@@ -284,6 +284,10 @@ func parseProduct(response ProductResponse) *ProductDetails {
 		Imageurl:          product.Media.Imageurl,
 		Smallimageurl:     product.Media.Smallimageurl,
 		Thumburl:          product.Media.Thumburl,
+		Lowestaskfloat:    product.Market.Lowestaskfloat,
+		Lowestask:         product.Market.Lowestask,
+		Highestbid:        product.Market.Highestbid,
+		Highestbidfloat:   product.Market.Highestbidfloat,
 		Variants:          variants,
 	}
 }

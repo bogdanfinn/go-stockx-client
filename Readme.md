@@ -3,6 +3,15 @@
 ### Preface
 This is a go library which should help you scraping stockx product data. The library does not use official stockx apis and might break due to unexpected changes from stockx.
 
+### Installation
+
+```go
+go get -u github.com/bogdanfinn/go-stockx-client
+
+// or specific version:
+// go get -u github.com/bogdanfinn/go-stockx-client@v0.1.1
+```
+
 ### Quick Example
 ```go
 package main

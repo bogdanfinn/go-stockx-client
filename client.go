@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"sort"
+	"strconv"
 	"strings"
 	"sync"
 
@@ -211,10 +213,77 @@ func (c *client) doRequest(url string, header http.Header) ([]byte, error) {
 func parseSearchResults(response ProductSearchResultResponse) []SearchResultProduct {
 	var searchResultProducts []SearchResultProduct
 
+	for _, responseProduct := range response.Products {
+		searchResultProducts = append(searchResultProducts, SearchResultProduct{
+			Brand:             responseProduct.Brand,
+			Colorway:          responseProduct.Colorway,
+			ImageUrl:          responseProduct.Media.Thumburl,
+			Category:          responseProduct.Productcategory,
+			Description:       responseProduct.Shortdescription,
+			Title:             responseProduct.Title,
+			ProductIdentifier: responseProduct.Urlkey,
+		})
+	}
+
 	return searchResultProducts
 }
 
 func parseProduct(response ProductResponse) *ProductDetails {
+	var variants []ProductDetailsVariant
 
-	return &ProductDetails{}
+	product := response.Product
+
+	for key, responseVariant := range product.Children {
+		if responseVariant.Market.Lastsalesize == "" {
+			continue
+		}
+
+		variants = append(variants, ProductDetailsVariant{
+			UUID:             key,
+			Size:             responseVariant.Market.Lastsalesize,
+			Lowestask:        responseVariant.Market.Lowestask,
+			Highestbid:       responseVariant.Market.Highestbid,
+			Annualhigh:       responseVariant.Market.Annualhigh,
+			Annuallow:        responseVariant.Market.Annuallow,
+			Lastsale:         responseVariant.Market.Lastsale,
+			Saleslast72Hours: responseVariant.Market.Saleslast72Hours,
+			Lastsaledate:     responseVariant.Market.Lastsaledate,
+			Lowestaskfloat:   responseVariant.Market.Lowestaskfloat,
+			Highestbidfloat:  responseVariant.Market.Highestbidfloat,
+		})
+	}
+
+	sort.Slice(variants, func(i, j int) bool {
+		sizeA, errA := strconv.ParseFloat(variants[i].Size, 32)
+		sizeB, errB := strconv.ParseFloat(variants[j].Size, 32)
+
+		if errA != nil || errB != nil {
+			return false
+		}
+
+		return sizeA < sizeB
+	})
+
+	return &ProductDetails{
+		ID:                product.ID,
+		UUID:              product.UUID,
+		Brand:             product.Brand,
+		Colorway:          product.Colorway,
+		Minimumbid:        product.Minimumbid,
+		Name:              product.Name,
+		Releasedate:       product.Releasedate,
+		Retailprice:       product.Retailprice,
+		Shoe:              product.Shoe,
+		Shortdescription:  product.Shortdescription,
+		Styleid:           product.Styleid,
+		Title:             product.Title,
+		SizeLocale:        product.Sizelocale,
+		SizeTitle:         product.Sizetitle,
+		ProductIdentifier: product.Urlkey,
+		Description:       product.Description,
+		Imageurl:          product.Media.Imageurl,
+		Smallimageurl:     product.Media.Smallimageurl,
+		Thumburl:          product.Media.Thumburl,
+		Variants:          variants,
+	}
 }

@@ -203,9 +203,13 @@ func (c *client) doRequest(url string, header http.Header) ([]byte, error) {
 		return nil, fmt.Errorf("failed to search for stockx products: %w", err)
 	}
 
+	c.logger.Info("stockx api (%s) response status code: %d", url, resp.StatusCode)
+
 	defer resp.Body.Close()
 
 	respBodyBytes, err := ioutil.ReadAll(resp.Body)
+
+	c.logger.Info("stockx api (%s) response body: %s", url, string(respBodyBytes))
 
 	return respBodyBytes, err
 }

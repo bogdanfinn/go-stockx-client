@@ -13,8 +13,44 @@ import (
 	tls_client "github.com/bogdanfinn/tls-client"
 )
 
+const stockxBaseUrl = "https://stockx.com/"
 const stockxSearchEndpointTemplate = "https://stockx.com/api/browse?_search=%s&page=1&resultsPerPage=%d&dataType=product&facetsToRetrieve[]=browseVerticals&propsToRetrieve[][]=brand&propsToRetrieve[][]=colorway&propsToRetrieve[][]=media.thumbUrl&propsToRetrieve[][]=title&propsToRetrieve[][]=productCategory&propsToRetrieve[][]=shortDescription&propsToRetrieve[][]=urlKey"
 const stockxProductDetailsEndpointTemplate = "https://stockx.com/api/products/%s?includes=market&currency=%s&country=US"
+
+var stockxHeader = http.Header{
+	"accept":             {"application/json"},
+	"accept-language":    {"de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"},
+	"app-platform":       {"Iron"},
+	"app-version":        {"2022.07.17.01"},
+	"cache-control":      {"no-cache"},
+	"pragma":             {"no-cache"},
+	"referer":            {"https://stockx.com/de-de"},
+	"sec-ch-ua":          {`".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"`},
+	"sec-ch-ua-mobile":   {"?0"},
+	"sec-ch-ua-platform": {`"macOS"`},
+	"sec-fetch-dest":     {"empty"},
+	"sec-fetch-mode":     {"cors"},
+	"sec-fetch-site":     {"same-origin"},
+	"user-agent":         {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"},
+	"x-requested-with":   {"XMLHttpRequest"},
+	http.HeaderOrderKey: {
+		"accept",
+		"accept-language",
+		"app-platform",
+		"app-version",
+		"cache-control",
+		"pragma",
+		"referer",
+		"sec-ch-ua",
+		"sec-ch-ua-mobile",
+		"sec-ch-ua-platform",
+		"sec-fetch-dest",
+		"sec-fetch-mode",
+		"sec-fetch-site",
+		"user-agent",
+		"x-requested-with",
+	},
+}
 
 type Client interface {
 	SearchProducts(query string, limit int) ([]SearchResultProduct, error)
@@ -22,9 +58,10 @@ type Client interface {
 }
 
 type client struct {
-	logger     Logger
-	currency   string
-	httpClient tls_client.HttpClient
+	initialized bool
+	logger      Logger
+	currency    string
+	httpClient  tls_client.HttpClient
 }
 
 var clientContainer = struct {
@@ -54,8 +91,8 @@ func ProvideClient(currency string, logger Logger) (Client, error) {
 func NewClient(currency string, logger Logger) (Client, error) {
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeout(30),
-		tls_client.WithClientProfile(tls_client.Chrome_103),
-		tls_client.WithNotFollowRedirects(),
+		tls_client.WithClientProfile(tls_client.Chrome_104),
+		// tls_client.WithNotFollowRedirects(),
 	}
 
 	httpClient, err := tls_client.NewHttpClient(logger, options...)
@@ -65,13 +102,38 @@ func NewClient(currency string, logger Logger) (Client, error) {
 	}
 
 	return &client{
-		logger:     logger,
-		currency:   currency,
-		httpClient: httpClient,
+		initialized: false,
+		logger:      logger,
+		currency:    currency,
+		httpClient:  httpClient,
 	}, nil
 }
 
+func (c *client) initialize() error {
+	if c.initialized {
+		return nil
+	}
+
+	statusCode, _, err := c.doRequest(stockxBaseUrl, stockxHeader)
+
+	if err != nil {
+		return fmt.Errorf("failed to initialize client: %w", err)
+	}
+
+	if statusCode == http.StatusOK {
+		c.initialized = true
+		return nil
+	}
+
+	return fmt.Errorf("received wrong status code during client initialization: %d", statusCode)
+}
+
 func (c *client) SearchProducts(query string, limit int) ([]SearchResultProduct, error) {
+	err := c.initialize()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize client: %w", err)
+	}
+
 	preparedQuery := query
 	if !strings.Contains(query, "+") && strings.Contains(query, " ") {
 		queryParts := strings.Split(query, " ")
@@ -80,42 +142,7 @@ func (c *client) SearchProducts(query string, limit int) ([]SearchResultProduct,
 
 	searchUrl := fmt.Sprintf(stockxSearchEndpointTemplate, preparedQuery, limit)
 
-	header := http.Header{
-		"accept":             {"application/json"},
-		"accept-language":    {"de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"},
-		"app-platform":       {"Iron"},
-		"app-version":        {"2022.07.17.01"},
-		"cache-control":      {"no-cache"},
-		"pragma":             {"no-cache"},
-		"referer":            {"https://stockx.com/de-de"},
-		"sec-ch-ua":          {`".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"`},
-		"sec-ch-ua-mobile":   {"?0"},
-		"sec-ch-ua-platform": {`"macOS"`},
-		"sec-fetch-dest":     {"empty"},
-		"sec-fetch-mode":     {"cors"},
-		"sec-fetch-site":     {"same-origin"},
-		"user-agent":         {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"},
-		"x-requested-with":   {"XMLHttpRequest"},
-		http.HeaderOrderKey: {
-			"accept",
-			"accept-language",
-			"app-platform",
-			"app-version",
-			"cache-control",
-			"pragma",
-			"referer",
-			"sec-ch-ua",
-			"sec-ch-ua-mobile",
-			"sec-ch-ua-platform",
-			"sec-fetch-dest",
-			"sec-fetch-mode",
-			"sec-fetch-site",
-			"user-agent",
-			"x-requested-with",
-		},
-	}
-
-	respBodyBytes, err := c.doRequest(searchUrl, header)
+	_, respBodyBytes, err := c.doRequest(searchUrl, stockxHeader)
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
 	}
@@ -133,45 +160,14 @@ func (c *client) SearchProducts(query string, limit int) ([]SearchResultProduct,
 }
 
 func (c *client) GetProduct(productIdentifier string) (*ProductDetails, error) {
-	productUrl := fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency)
-
-	header := http.Header{
-		"accept":             {"text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9"},
-		"accept-encoding":    {"gzip, deflate, br"},
-		"accept-language":    {"de-DE,de;q=0.9,en-US;q=0.8,en;q=0.7"},
-		"app-platform":       {"Iron"},
-		"app-version":        {"2022.07.17.01"},
-		"cache-control":      {"no-cache"},
-		"pragma":             {"no-cache"},
-		"referer":            {"https://stockx.com/de-de"},
-		"sec-ch-ua":          {`".Not/A)Brand";v="99", "Google Chrome";v="103", "Chromium";v="103"`},
-		"sec-ch-ua-mobile":   {"?0"},
-		"sec-ch-ua-platform": {`"macOS"`},
-		"sec-fetch-dest":     {"empty"},
-		"sec-fetch-mode":     {"cors"},
-		"sec-fetch-site":     {"same-origin"},
-		"user-agent":         {"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/103.0.0.0 Safari/537.36"},
-		"x-requested-with":   {"XMLHttpRequest"},
-		http.HeaderOrderKey: {
-			"accept",
-			"accept-language",
-			"app-platform",
-			"app-version",
-			"cache-control",
-			"pragma",
-			"referer",
-			"sec-ch-ua",
-			"sec-ch-ua-mobile",
-			"sec-ch-ua-platform",
-			"sec-fetch-dest",
-			"sec-fetch-mode",
-			"sec-fetch-site",
-			"user-agent",
-			"x-requested-with",
-		},
+	err := c.initialize()
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize client: %w", err)
 	}
 
-	respBodyBytes, err := c.doRequest(productUrl, header)
+	productUrl := fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency)
+
+	_, respBodyBytes, err := c.doRequest(productUrl, stockxHeader)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
@@ -189,10 +185,10 @@ func (c *client) GetProduct(productIdentifier string) (*ProductDetails, error) {
 	return product, nil
 }
 
-func (c *client) doRequest(url string, header http.Header) ([]byte, error) {
+func (c *client) doRequest(url string, header http.Header) (int, []byte, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create stockx search request: %w", err)
+		return 0, nil, fmt.Errorf("failed to create stockx search request: %w", err)
 	}
 
 	req.Header = header
@@ -200,7 +196,7 @@ func (c *client) doRequest(url string, header http.Header) ([]byte, error) {
 	resp, err := c.httpClient.Do(req)
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to search for stockx products: %w", err)
+		return 0, nil, fmt.Errorf("failed to search for stockx products: %w", err)
 	}
 
 	c.logger.Info("stockx api (%s) response status code: %d", url, resp.StatusCode)
@@ -211,7 +207,7 @@ func (c *client) doRequest(url string, header http.Header) ([]byte, error) {
 
 	c.logger.Info("stockx api (%s) response body: %s", url, string(respBodyBytes))
 
-	return respBodyBytes, err
+	return resp.StatusCode, respBodyBytes, err
 }
 
 func parseSearchResults(response ProductSearchResultResponse) []SearchResultProduct {

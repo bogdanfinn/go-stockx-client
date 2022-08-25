@@ -9,9 +9,9 @@ import (
 
 func main() {
 	// NewClient() returns each time a new instance
-	// Provide() is creating one client instance and returning the same instance on every Provide() call
-	client, err := go_stockx_client.ProvideClient("USD", go_stockx_client.NewNoopLogger())
-	// client, err := go_stockx_client.NewClient("USD", go_stockx_client.NewNoopLogger())
+	// Provide() is creating one client instance and returning the same instance on every Provide() call.
+	client, err := go_stockx_client.ProvideClient("EUR", "DE", go_stockx_client.NewNoopLogger())
+	// client, err := go_stockx_client.NewClient("EUR", "DE", go_stockx_client.NewNoopLogger())
 
 	if err != nil {
 		log.Println(err.Error())
@@ -41,4 +41,7 @@ func main() {
 	}
 
 	log.Println(fmt.Sprintf("successfully loaded product details for %s", productDetails.ProductIdentifier))
+
+	log.Println(fmt.Sprintf("Highest Bid: %d", productDetails.Highestbid))
+	log.Println(fmt.Sprintf("Lowest Ask: %d", productDetails.Lowestask))
 }

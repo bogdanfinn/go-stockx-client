@@ -15,7 +15,7 @@ import (
 
 const stockxBaseUrl = "https://stockx.com/"
 const stockxSearchEndpointTemplate = "https://stockx.com/api/browse?_search=%s&page=1&resultsPerPage=%d&dataType=product&facetsToRetrieve[]=browseVerticals&propsToRetrieve[][]=brand&propsToRetrieve[][]=colorway&propsToRetrieve[][]=media.thumbUrl&propsToRetrieve[][]=title&propsToRetrieve[][]=productCategory&propsToRetrieve[][]=shortDescription&propsToRetrieve[][]=urlKey"
-const stockxProductDetailsEndpointTemplate = "https://stockx.com/api/products/%s?includes=market&currency=%s&country=US"
+const stockxProductDetailsEndpointTemplate = "https://stockx.com/api/products/%s?includes=market&currency=%s&country=%s&market=%s"
 
 var stockxHeader = http.Header{
 	"accept":             {"application/json"},
@@ -61,6 +61,7 @@ type client struct {
 	initialized bool
 	logger      Logger
 	currency    string
+	locale      string
 	httpClient  tls_client.HttpClient
 }
 
@@ -69,7 +70,7 @@ var clientContainer = struct {
 	instance Client
 }{}
 
-func ProvideClient(currency string, logger Logger) (Client, error) {
+func ProvideClient(currency string, locale string, logger Logger) (Client, error) {
 	clientContainer.Lock()
 	defer clientContainer.Unlock()
 
@@ -77,7 +78,7 @@ func ProvideClient(currency string, logger Logger) (Client, error) {
 		return clientContainer.instance, nil
 	}
 
-	instance, err := NewClient(currency, logger)
+	instance, err := NewClient(currency, locale, logger)
 
 	if err != nil {
 		return nil, err
@@ -88,7 +89,7 @@ func ProvideClient(currency string, logger Logger) (Client, error) {
 	return clientContainer.instance, nil
 }
 
-func NewClient(currency string, logger Logger) (Client, error) {
+func NewClient(currency string, locale string, logger Logger) (Client, error) {
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeout(30),
 		tls_client.WithClientProfile(tls_client.Chrome_104),
@@ -104,7 +105,8 @@ func NewClient(currency string, logger Logger) (Client, error) {
 	return &client{
 		initialized: false,
 		logger:      logger,
-		currency:    currency,
+		currency:    strings.ToUpper(currency),
+		locale:      strings.ToUpper(locale),
 		httpClient:  httpClient,
 	}, nil
 }
@@ -165,7 +167,7 @@ func (c *client) GetProduct(productIdentifier string) (*ProductDetails, error) {
 		return nil, fmt.Errorf("failed to initialize client: %w", err)
 	}
 
-	productUrl := fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency)
+	productUrl := fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency, c.locale, c.locale)
 
 	_, respBodyBytes, err := c.doRequest(productUrl, stockxHeader)
 

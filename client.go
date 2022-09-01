@@ -92,7 +92,7 @@ func ProvideClient(currency string, locale string, logger Logger) (Client, error
 func NewClient(currency string, locale string, logger Logger) (Client, error) {
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeout(30),
-		tls_client.WithClientProfile(tls_client.Chrome_104),
+		tls_client.WithClientProfile(tls_client.Chrome_105),
 		// tls_client.WithNotFollowRedirects(),
 	}
 

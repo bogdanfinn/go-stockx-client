@@ -1,11 +1,11 @@
 github.com/andybalholm/brotli v1.0.4 h1:V7DdXeJtZscaqfNuAdSRuRFzuiKlHSC/Zh3zl9qY3JY=
 github.com/andybalholm/brotli v1.0.4/go.mod h1:fO7iG3H7G2nSZ7m0zPUDn85XEX2GTukHGRSepvi9Eig=
-github.com/bogdanfinn/fhttp v0.4.1 h1:WC9JU/s3ngtbQNlsRr0N8W55JWJhoxnPROGIFHP5Sqs=
-github.com/bogdanfinn/fhttp v0.4.1/go.mod h1:XaPvqqW3dplXFKXqb6xr8xX412zfjFs8N4IOKEEX5Dc=
-github.com/bogdanfinn/tls-client v0.4.5 h1:guhnfHdqV2P7WMcC0WWAzhsutJ0g7YSnwhILLnSSr34=
-github.com/bogdanfinn/tls-client v0.4.5/go.mod h1:Gp1ACHhtgG46hM6xGasKQ0xORmK8qBi/thIZ7nkLMXE=
-github.com/bogdanfinn/utls v0.4.1 h1:PwOOCepidme62XI+ECrWgWhvnyb3qJbvuEZaReGT1yM=
-github.com/bogdanfinn/utls v0.4.1/go.mod h1:FPF9ygi+iA4S/apxLKSXOUx7uIy7spLzl3AEFSKOeiI=
+github.com/bogdanfinn/fhttp v0.4.3 h1:FaPM0FKkKMjlRMS/Mr2g2pBTd6JdNf5eUEpI8gnl5aM=
+github.com/bogdanfinn/fhttp v0.4.3/go.mod h1:3RwSuZbVJgQMNiWIb7VKrqUt+XA4bN9V0Z7I34RBHNs=
+github.com/bogdanfinn/tls-client v0.4.7 h1:lFyWBJ63+u/4hlLZQtArtBaXsaHYebv765enOZX54co=
+github.com/bogdanfinn/tls-client v0.4.7/go.mod h1:guS35wQ8IjNzbK2+9gjjKH3viZIfhYX7eycEkTszQKw=
+github.com/bogdanfinn/utls v0.4.2 h1:sw3pe8O2bASRHzc2tdsXl2IYiDMK4gOoO12dL7+zE1M=
+github.com/bogdanfinn/utls v0.4.2/go.mod h1:FPF9ygi+iA4S/apxLKSXOUx7uIy7spLzl3AEFSKOeiI=
 github.com/klauspost/compress v1.15.9 h1:wKRjX6JRtDdrE9qwa4b/Cip7ACOshUI4smpCQanqjSY=
 github.com/klauspost/compress v1.15.9/go.mod h1:PhcZ0MbTNciWF3rruxRgKxI5NkcHHrHUDtV4Yw2GlzU=
 golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 h1:kUhD7nTDoI3fVd9G4ORWrbV5NY0liEs/Jg2pv5f+bBA=

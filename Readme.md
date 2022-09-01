@@ -255,4 +255,4 @@ You can use these values for `currency` and `locale` when creating a new client.
 TBD
 
 ### Questions?
-Contact me on discord
+Join my discord support server: https: // discord.gg / 7Ej9eJvHqk 

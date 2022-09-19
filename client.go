@@ -55,6 +55,8 @@ var stockxHeader = http.Header{
 type Client interface {
 	SearchProducts(query string, limit int) ([]SearchResultProduct, error)
 	GetProduct(productIdentifier string) (*ProductDetails, error)
+	SetProxy(proxyUrl string) error
+	GetProxy() string
 }
 
 type client struct {
@@ -128,6 +130,14 @@ func (c *client) initialize() error {
 	}
 
 	return fmt.Errorf("received wrong status code during client initialization: %d", statusCode)
+}
+
+func (c *client) SetProxy(proxyUrl string) error {
+	return c.httpClient.SetProxy(proxyUrl)
+}
+
+func (c *client) GetProxy() string {
+	return c.httpClient.GetProxy()
 }
 
 func (c *client) SearchProducts(query string, limit int) ([]SearchResultProduct, error) {

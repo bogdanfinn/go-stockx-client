@@ -61,11 +61,13 @@ func main() {
 ```
 
 ### Supported Methods
-Method | Description                                                                                                                                          | Arguments | Return Value
---- |------------------------------------------------------------------------------------------------------------------------------------------------------|----------------------------------|--------------
-NewClient | Creates a new client instance. Takes a currency string (for example `"USD"`) and a logger which implements the logger interface as parameters. Or returns an error      | `currency string`, `logger Logger` | `Client`, `error` 
-SearchProducts | Search Stockx for products based on the given search query and returns search results up to the provided limit argument or less. Or returns an error | `searchQuery string`, `limit: int` | `[]SearchResultProduct`, `error` 
-GetProduct | Scrapes product details for a given product identifier which you get from the search results. Or returns an error                                    | `productIdentifier: string`        | `*ProductDetails`, `error`       
+Method | Description                                                                                                                                                        | Arguments                         | Return Value
+--- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------|--------------
+NewClient | Creates a new client instance. Takes a currency string (for example `"USD"`) and a logger which implements the logger interface as parameters. Or returns an error | `currency string`, `logger Logger` | `Client`, `error` 
+SearchProducts | Search Stockx for products based on the given search query and returns search results up to the provided limit argument or less. Or returns an error               | `searchQuery string`, `limit: int` | `[]SearchResultProduct`, `error` 
+GetProduct | Scrapes product details for a given product identifier which you get from the search results. Or returns an error                                                  | `productIdentifier: string`       | `*ProductDetails`, `error`       
+SetProxy | Sets a Proxy to be used for the Stockx Client. Use this pattern `http://username:password@host:port`                                                               | `proxyUrl: string`                | `error`       
+GetProxy | Returns the current active proxy for the stockx client.   |      | `string`       
 
 ### Types
 

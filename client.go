@@ -217,7 +217,7 @@ func (c *client) doRequest(url string, header http.Header) (int, []byte, error) 
 
 	respBodyBytes, err := ioutil.ReadAll(resp.Body)
 
-	c.logger.Info("stockx api (%s) response body: %s", url, string(respBodyBytes))
+	c.logger.Debug("stockx api (%s) response body: %s", url, string(respBodyBytes))
 
 	return resp.StatusCode, respBodyBytes, err
 }

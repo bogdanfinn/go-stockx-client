@@ -10,6 +10,7 @@ import (
 	"sync"
 
 	http "github.com/bogdanfinn/fhttp"
+	"github.com/bogdanfinn/fhttp/cookiejar"
 	tls_client "github.com/bogdanfinn/tls-client"
 )
 
@@ -92,9 +93,12 @@ func ProvideClient(currency string, locale string, logger Logger) (Client, error
 }
 
 func NewClient(currency string, locale string, logger Logger) (Client, error) {
+	jar, _ := cookiejar.New(nil)
+
 	options := []tls_client.HttpClientOption{
 		tls_client.WithTimeout(30),
 		tls_client.WithClientProfile(tls_client.Chrome_105),
+		tls_client.WithCookieJar(jar),
 		// tls_client.WithNotFollowRedirects(),
 	}
 

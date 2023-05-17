@@ -10,7 +10,7 @@ import (
 func main() {
 	// NewClient() returns each time a new instance
 	// Provide() is creating one client instance and returning the same instance on every Provide() call.
-	client, err := go_stockx_client.ProvideClient("EUR", "DE", go_stockx_client.NewNoopLogger())
+	client, err := go_stockx_client.ProvideClient("EUR", "DE", go_stockx_client.NewNoopLogger(), false)
 	// client, err := go_stockx_client.NewClient("EUR", "DE", go_stockx_client.NewNoopLogger())
 
 	if err != nil {

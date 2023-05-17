@@ -66,6 +66,7 @@ type client struct {
 	currency    string
 	locale      string
 	httpClient  tls_client.HttpClient
+	vatAccount  bool
 }
 
 var clientContainer = struct {
@@ -73,7 +74,7 @@ var clientContainer = struct {
 	instance Client
 }{}
 
-func ProvideClient(currency string, locale string, logger Logger) (Client, error) {
+func ProvideClient(currency string, locale string, logger Logger, vatAccount bool) (Client, error) {
 	clientContainer.Lock()
 	defer clientContainer.Unlock()
 
@@ -81,7 +82,7 @@ func ProvideClient(currency string, locale string, logger Logger) (Client, error
 		return clientContainer.instance, nil
 	}
 
-	instance, err := NewClient(currency, locale, logger)
+	instance, err := NewClient(currency, locale, logger, vatAccount)
 
 	if err != nil {
 		return nil, err
@@ -92,7 +93,7 @@ func ProvideClient(currency string, locale string, logger Logger) (Client, error
 	return clientContainer.instance, nil
 }
 
-func NewClient(currency string, locale string, logger Logger) (Client, error) {
+func NewClient(currency string, locale string, logger Logger, vatAccount bool) (Client, error) {
 	jar, _ := cookiejar.New(nil)
 
 	options := []tls_client.HttpClientOption{
@@ -114,6 +115,7 @@ func NewClient(currency string, locale string, logger Logger) (Client, error) {
 		currency:    strings.ToUpper(currency),
 		locale:      strings.ToUpper(locale),
 		httpClient:  httpClient,
+		vatAccount:  vatAccount,
 	}, nil
 }
 
@@ -182,7 +184,9 @@ func (c *client) GetProduct(productIdentifier string) (*ProductDetails, error) {
 	}
 
 	productUrl := fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency, c.locale, c.locale)
-
+	if c.vatAccount {
+		productUrl = fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency, c.locale, fmt.Sprintf("%s.vat-registered", c.locale))
+	}
 	_, respBodyBytes, err := c.doRequest(productUrl, stockxHeader)
 
 	if err != nil {

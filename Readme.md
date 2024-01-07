@@ -3,6 +3,8 @@
 ### Preface
 This is a go library which should help you scraping stockx product data. The library does not use official stockx apis and might break due to unexpected changes from stockx.
 
+Update: As stated above currently some endpoints are not working anymore. Pull Requests are welcome.
+
 ### Installation
 
 ```go

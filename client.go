@@ -3,6 +3,7 @@ package go_stockx_client
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/bogdanfinn/tls-client/profiles"
 	"io/ioutil"
 	"sort"
 	"strconv"
@@ -97,8 +98,8 @@ func NewClient(currency string, locale string, logger Logger, vatAccount bool) (
 	jar, _ := cookiejar.New(nil)
 
 	options := []tls_client.HttpClientOption{
-		tls_client.WithTimeout(30),
-		tls_client.WithClientProfile(tls_client.Chrome_105),
+		tls_client.WithTimeoutSeconds(30),
+		tls_client.WithClientProfile(profiles.Chrome_117),
 		tls_client.WithCookieJar(jar),
 		// tls_client.WithNotFollowRedirects(),
 	}
@@ -187,10 +188,14 @@ func (c *client) GetProduct(productIdentifier string) (*ProductDetails, error) {
 	if c.vatAccount {
 		productUrl = fmt.Sprintf(stockxProductDetailsEndpointTemplate, productIdentifier, c.currency, c.locale, fmt.Sprintf("%s.vat-registered", c.locale))
 	}
-	_, respBodyBytes, err := c.doRequest(productUrl, stockxHeader)
+	statusCode, respBodyBytes, err := c.doRequest(productUrl, stockxHeader)
 
 	if err != nil {
 		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	if statusCode != http.StatusOK {
+		return nil, fmt.Errorf("received wrong status code during product details request: %d", statusCode)
 	}
 
 	response := ProductResponse{}

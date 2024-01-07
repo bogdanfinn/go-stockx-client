@@ -18,7 +18,7 @@ func main() {
 		return
 	}
 
-	query := "adidas yeezy foam rnnr onyx"
+	query := "adidas yeezy turtle dove"
 	stockSearchResults, err := client.SearchProducts(query, 10)
 
 	if err != nil {
